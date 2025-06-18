@@ -5,6 +5,7 @@ API_VER      = 30
 SOURCES_C    = src/main.c
 SOURCES_JAVA = java/$(APP_ID_PATH)/MainActivity.java
 ANDROID_SDK  = $(shell realpath ~/Android/Sdk)
+JBR_BIN      = $(shell realpath ~/android-studio/jbr/bin)
 BUILD_TOOLS  = $(ANDROID_SDK)/build-tools/36.0.0
 NDK          = $(ANDROID_SDK)/ndk/29.0.13599879
 PLATFORM     = $(ANDROID_SDK)/platforms/android-$(API_VER)
@@ -52,12 +53,12 @@ endif
 java/$(APP_ID_PATH)/*.java: R_java $(BUILD)/aar/activity_1.10.1.aar
 	@mkdir -p $(BUILD)/obj $(BUILD)/apk
 	@echo "# Compile Java Code To Bytecode for JVM"
-	@javac --release 11 \
+	@$(JBR_BIN)/javac --release 11 \
 		-classpath "$(PLATFORM)/android.jar:$(BUILD)/aar/activity_1.10.1/classes.jar" \
 		-d $(BUILD)/obj $(BUILD)/gen/$(APP_ID_PATH)/R.java \
 		java/$(APP_ID_PATH)/MainActivity.java # Note: It seems that on Windows classpath separator is ; & on Linux it's : This might mess up things, So thought of adding this to make sure I don't kill myself over this
 	@echo "# Convert JVM Bytecode To DEX Bytecode"
-	@$(BUILD_TOOLS)/d8 --release --lib $(PLATFORM)/android.jar --output $(BUILD)/apk/ build/obj/$(APP_ID_PATH)/*.class
+	@PATH="$(JBR_BIN):$$PATH" $(BUILD_TOOLS)/d8 --release --lib $(PLATFORM)/android.jar --output $(BUILD)/apk/ build/obj/$(APP_ID_PATH)/*.class
 
 $(BUILD)/apk/lib/$(TARGET_ARCH)/lib$(APP_NAME).so: $(SOURCES_C)
 	@echo "# Compile $^ To Native Code"
@@ -70,7 +71,7 @@ all: my-release-key.keystore dex_files so_files
 	@echo "# Align APK On 4-Byte Boundaries"
 	@$(BUILD_TOOLS)/zipalign -f -p 4 $(BUILD)/$(APK_FILE).unsigned $(BUILD)/$(APK_FILE).aligned
 	@echo "# Sign APK"
-	@$(BUILD_TOOLS)/apksigner sign --key-pass pass:password --ks-pass pass:password --ks my-release-key.keystore --out $(BUILD)/$(APK_FILE) $(BUILD)/$(APK_FILE).aligned
+	@PATH="$(JBR_BIN):$$PATH" $(BUILD_TOOLS)/apksigner sign --key-pass pass:password --ks-pass pass:password --ks my-release-key.keystore --out $(BUILD)/$(APK_FILE) $(BUILD)/$(APK_FILE).aligned
 
 so_files: $(BUILD)/apk/lib/$(TARGET_ARCH)/lib$(APP_NAME).so
 dex_files: $(SOURCES_JAVA)
@@ -88,7 +89,7 @@ $(BUILD)/aar/activity_1.10.1.aar:
 
 my-release-key.keystore:
 	@echo "# Generate my-release-key.keystore"
-	@keytool -genkey -v -keystore $@ -alias standkey -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=example.com, OU=ID, O=Example, L=Doe, S=John, C=GB"
+	@$(JBR_BIN)/keytool -genkey -v -keystore $@ -alias standkey -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=example.com, OU=ID, O=Example, L=Doe, S=John, C=GB"
 
 .PHONY: clean
 clean:
@@ -108,4 +109,4 @@ run: push
 # Usage: make jni-call class_name=android.text.AutoText
 jni-call:
 	$(eval class_name := $(if $(class_name),$(class_name),android.text.Html))
-	@javap --class-path "$(PLATFORM)/android.jar" -s -p "$(class_name)"
+	@$(JBR_BIN)/javap --class-path "$(PLATFORM)/android.jar" -s -p "$(class_name)"
