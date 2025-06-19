@@ -5,7 +5,7 @@
 	versionCode="1"
 	versionName="0.1"
 >
-	<uses-sdk android:minSdkVersion="30" />
+	<uses-sdk android:minSdkVersion="21" />
 	<application android:label="Hello">
 		<activity
 			android:name=".MainActivity"

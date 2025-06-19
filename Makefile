@@ -1,7 +1,7 @@
 APP_NAME     = testapp
 APP_ID       = org.yourorg.testapp
 APP_ID_PATH  = $(subst .,/,$(APP_ID))
-API_VER      = 30
+API_VER      = 21
 SOURCES_C    = src/main.c
 SOURCES_JAVA = java/$(APP_ID_PATH)/MainActivity.java
 ANDROID_SDK  = $(shell realpath ~/Android/Sdk)
