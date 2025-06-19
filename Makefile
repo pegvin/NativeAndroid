@@ -23,7 +23,8 @@ else
 $(error Failed to detect the operating system)
 endif
 
-CFLAGS=-ffunction-sections -Os -fdata-sections -Wall -Wpedantic -fvisibility=hidden -fPIC
+CFLAGS=-ffunction-sections -Os -fdata-sections -Wall -Wpedantic -fvisibility=hidden -fPIC -DAPP_ID=\"$(APP_ID)\"
+CFLAGS+=-D"JNI_FUNC(return, class, name)=JNIEXPORT return JNICALL Java_$(subst .,_,$(APP_ID))_\#\#class\#\#_\#\#name(JNIEnv *env, jobject obj)"
 CFLAGS+=-I$(NDK)/sysroot/usr/include -I$(NDK)/sysroot/usr/include/android -I$(NDK)/toolchains/llvm/prebuilt/$(OS_NAME)/sysroot/usr/include -I$(NDK)/toolchains/llvm/prebuilt/$(OS_NAME)/sysroot/usr/include/android
 LFLAGS=-Wl,--gc-sections -Wl,-Map=output.map -s -lm -lGLESv3 -lEGL -landroid -llog -lOpenSLES -shared -uANativeActivity_onCreate
 
@@ -104,6 +105,12 @@ run: push
 	@echo "# Send Run Command On Target Devices"
 	$(eval ACTIVITYNAME:=$(shell $(BUILD_TOOLS)/aapt dump badging $(BUILD)/$(APK_FILE) | grep "launchable-activity" | cut -f 2 -d"'"))
 	@adb shell am start -n $(APP_ID)/$(ACTIVITYNAME)
+
+adb-log-clear:
+	@adb logcat --clear
+
+adb-log:
+	@adb logcat -b all -v color "ActivityManager:V $(APP_ID):V *:S"
 
 # Convert Class Name To Something Usable By JNI
 # Usage: make jni-call class_name=android.text.AutoText

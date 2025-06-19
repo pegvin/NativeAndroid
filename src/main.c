@@ -1,5 +1,11 @@
 #include <stdlib.h>
 #include <jni.h>
+#include <android/log.h>
+
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, APP_ID, __VA_ARGS__)
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN,  APP_ID, __VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  APP_ID, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, APP_ID, __VA_ARGS__)
 
 static const char *const messages[] = {
 	"Hello, world!",
@@ -8,7 +14,12 @@ static const char *const messages[] = {
 	"Hallo Welt!"
 };
 
-JNIEXPORT jstring JNICALL Java_org_yourorg_testapp_MainActivity_getMessage(JNIEnv *env, jobject obj) {
+JNI_FUNC(jstring, MainActivity, getMessage) {
+	LOGE("HELLO!");
+	#define SZ 1000
 	int i = rand() % (sizeof(messages) / sizeof(messages[0]));
-	return (*env)->NewStringUTF(env, messages[i]);
+	char buf[SZ] = {0};
+	snprintf(buf, SZ, "%s - %d", messages[i], rand());
+	LOGI("Look: '%s'", buf);
+	return (*env)->NewStringUTF(env, buf);
 }

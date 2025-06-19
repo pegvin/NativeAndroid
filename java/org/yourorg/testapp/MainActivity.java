@@ -20,4 +20,11 @@ public class MainActivity extends Activity {
 		TextView text = (TextView)findViewById(R.id.my_text);
 		text.setText(getMessage());
 	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		TextView text = (TextView)findViewById(R.id.my_text);
+		text.setText(getMessage());
+	}
 }
