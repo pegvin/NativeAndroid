@@ -54,3 +54,4 @@ dkms.conf
 # Misc. Files
 build/
 *.keystore
+.cache/
