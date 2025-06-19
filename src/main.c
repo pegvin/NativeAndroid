@@ -15,11 +15,13 @@ static const char *const messages[] = {
 };
 
 JNI_FUNC(jstring, MainActivity, getMessage) {
-	LOGE("HELLO!");
+	LOGE("MainActivity.getMessage() called!");
+
 	#define SZ 1000
 	int i = rand() % (sizeof(messages) / sizeof(messages[0]));
 	char buf[SZ] = {0};
 	snprintf(buf, SZ, "%s - %d", messages[i], rand());
-	LOGI("Look: '%s'", buf);
-	return (*env)->NewStringUTF(env, buf);
+	jstring str = (*env)->NewStringUTF(env, buf);
+
+	return str;
 }
