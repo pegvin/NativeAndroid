@@ -5,7 +5,6 @@ API_VER      = 21
 SOURCES_C    = src/main.c
 SOURCES_JAVA = java/MainActivity.java java/MainLib.java
 ANDROID_SDK  = $(shell realpath ~/Android/Sdk)
-JBR_BIN      = $(shell realpath ~/android-studio/jbr/bin)
 BUILD_TOOLS  = $(ANDROID_SDK)/build-tools/36.0.0
 NDK          = $(ANDROID_SDK)/ndk/29.0.13599879
 PLATFORM     = $(ANDROID_SDK)/platforms/android-$(API_VER)
@@ -57,12 +56,12 @@ java_files: AndroidManifest.xml $(SOURCES_JAVA)
 	@$(BUILD_TOOLS)/aapt package -f -m -J $(BUILD)/gen/ -S res -M AndroidManifest.xml -I $(PLATFORM)/android.jar
 	@echo "# Compile Java Code To Bytecode for JVM"
 	@mkdir -p $(BUILD)/obj $(BUILD)/apk
-	@$(JBR_BIN)/javac --release 11 \
+	@javac --release 11 \
 		-classpath "$(PLATFORM)/android.jar" \
 		-d $(BUILD)/obj $(BUILD)/gen/$(APP_ID_PATH)/R.java \
 		$(SOURCES_JAVA) # Note: It seems that on Windows classpath separator is ; & on Linux it's : This might mess up things, So thought of adding this to make sure I don't kill myself over this
 	@echo "# Convert JVM Bytecode To DEX Bytecode"
-	@PATH="$(JBR_BIN):$$PATH" $(BUILD_TOOLS)/d8 --release --lib $(PLATFORM)/android.jar --output $(BUILD)/apk/ build/obj/$(APP_ID_PATH)/*.class
+	@$(BUILD_TOOLS)/d8 --release --lib $(PLATFORM)/android.jar --output $(BUILD)/apk/ build/obj/$(APP_ID_PATH)/*.class
 
 c_files: $(SOURCES_C)
 	@echo "# Compile $^ To Native Code"
@@ -71,7 +70,7 @@ c_files: $(SOURCES_C)
 
 my-release-key.keystore:
 	@echo "# Generate my-release-key.keystore"
-	@$(JBR_BIN)/keytool -genkey -v -keystore $@ -alias standkey -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=example.com, OU=ID, O=Example, L=Doe, S=John, C=GB"
+	@keytool -genkey -v -keystore $@ -alias standkey -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=example.com, OU=ID, O=Example, L=Doe, S=John, C=GB"
 
 all: c_files java_files my-release-key.keystore
 	@echo "# Build APK"
@@ -79,7 +78,7 @@ all: c_files java_files my-release-key.keystore
 	@echo "# Align APK On 4-Byte Boundaries"
 	@$(BUILD_TOOLS)/zipalign -f -p 4 $(BUILD)/$(APK_FILE).unsigned $(BUILD)/$(APK_FILE).aligned
 	@echo "# Sign APK"
-	@PATH="$(JBR_BIN):$$PATH" $(BUILD_TOOLS)/apksigner sign --key-pass pass:password --ks-pass pass:password --ks my-release-key.keystore --out $(BUILD)/$(APK_FILE) $(BUILD)/$(APK_FILE).aligned
+	@$(BUILD_TOOLS)/apksigner sign --key-pass pass:password --ks-pass pass:password --ks my-release-key.keystore --out $(BUILD)/$(APK_FILE) $(BUILD)/$(APK_FILE).aligned
 
 .PHONY: clean
 clean:
@@ -105,4 +104,4 @@ adb-log:
 # Usage: make jni-call class_name=android.text.AutoText
 jni-call:
 	$(eval class_name := $(if $(class_name),$(class_name),android.text.Html))
-	@$(JBR_BIN)/javap --class-path "$(PLATFORM)/android.jar" -s -p "$(class_name)"
+	@javap --class-path "$(PLATFORM)/android.jar" -s -p "$(class_name)"
