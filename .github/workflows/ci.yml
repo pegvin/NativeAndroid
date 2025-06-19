@@ -1,0 +1,35 @@
+name: Build
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Deps (Linux)
+      if: ${{ matrix.os == 'ubuntu-22.04' }}
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install make openjdk-17-jdk-headless -y
+
+    - uses: nttld/setup-ndk@v1
+      id: setup-ndk
+      with:
+        ndk-version: r21e
+        add-to-path: false
+        local-cache: true
+    - run: echo $NDK && ls $NDK
+      env:
+        NDK: ${{ steps.setup-ndk.outputs.ndk-path }}
+
