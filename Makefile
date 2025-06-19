@@ -3,7 +3,7 @@ APP_ID       = org.yourorg.testapp
 APP_ID_PATH  = $(subst .,/,$(APP_ID))
 API_VER      = 21
 SOURCES_C    = src/main.c
-SOURCES_JAVA = java/MainActivity.java
+SOURCES_JAVA = java/MainActivity.java java/MainLib.java
 ANDROID_SDK  = $(shell realpath ~/Android/Sdk)
 JBR_BIN      = $(shell realpath ~/android-studio/jbr/bin)
 BUILD_TOOLS  = $(ANDROID_SDK)/build-tools/36.0.0
@@ -51,46 +51,35 @@ else
 $(error Invalid target architecture)
 endif
 
-java/*.java: R_java $(BUILD)/aar/activity_1.10.1.aar
-	@mkdir -p $(BUILD)/obj $(BUILD)/apk
+java_files: AndroidManifest.xml $(SOURCES_JAVA)
+	@echo "# Generate R.java"
+	@mkdir -p $(BUILD)/gen/
+	@$(BUILD_TOOLS)/aapt package -f -m -J $(BUILD)/gen/ -S res -M AndroidManifest.xml -I $(PLATFORM)/android.jar
 	@echo "# Compile Java Code To Bytecode for JVM"
+	@mkdir -p $(BUILD)/obj $(BUILD)/apk
 	@$(JBR_BIN)/javac --release 11 \
-		-classpath "$(PLATFORM)/android.jar:$(BUILD)/aar/activity_1.10.1/classes.jar" \
+		-classpath "$(PLATFORM)/android.jar" \
 		-d $(BUILD)/obj $(BUILD)/gen/$(APP_ID_PATH)/R.java \
 		$(SOURCES_JAVA) # Note: It seems that on Windows classpath separator is ; & on Linux it's : This might mess up things, So thought of adding this to make sure I don't kill myself over this
 	@echo "# Convert JVM Bytecode To DEX Bytecode"
 	@PATH="$(JBR_BIN):$$PATH" $(BUILD_TOOLS)/d8 --release --lib $(PLATFORM)/android.jar --output $(BUILD)/apk/ build/obj/$(APP_ID_PATH)/*.class
 
-$(BUILD)/apk/lib/$(TARGET_ARCH)/lib$(APP_NAME).so: $(SOURCES_C)
+c_files: $(SOURCES_C)
 	@echo "# Compile $^ To Native Code"
 	@mkdir -p $(BUILD)/apk/lib/$(TARGET_ARCH)
-	@bear --append --output $(BUILD)/compile_commands.json -- $(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+	@bear --append --output $(BUILD)/compile_commands.json -- $(CC) $(CFLAGS) -o $(BUILD)/apk/lib/$(TARGET_ARCH)/lib$(APP_NAME).so $^ $(LFLAGS)
 
-all: my-release-key.keystore dex_files so_files
+my-release-key.keystore:
+	@echo "# Generate my-release-key.keystore"
+	@$(JBR_BIN)/keytool -genkey -v -keystore $@ -alias standkey -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=example.com, OU=ID, O=Example, L=Doe, S=John, C=GB"
+
+all: c_files java_files my-release-key.keystore
 	@echo "# Build APK"
 	@$(BUILD_TOOLS)/aapt package -f -M AndroidManifest.xml -S res/ -I $(PLATFORM)/android.jar -F $(BUILD)/$(APK_FILE).unsigned $(BUILD)/apk/
 	@echo "# Align APK On 4-Byte Boundaries"
 	@$(BUILD_TOOLS)/zipalign -f -p 4 $(BUILD)/$(APK_FILE).unsigned $(BUILD)/$(APK_FILE).aligned
 	@echo "# Sign APK"
 	@PATH="$(JBR_BIN):$$PATH" $(BUILD_TOOLS)/apksigner sign --key-pass pass:password --ks-pass pass:password --ks my-release-key.keystore --out $(BUILD)/$(APK_FILE) $(BUILD)/$(APK_FILE).aligned
-
-so_files: $(BUILD)/apk/lib/$(TARGET_ARCH)/lib$(APP_NAME).so
-dex_files: $(SOURCES_JAVA)
-
-R_java: AndroidManifest.xml
-	@echo "# Generate R.java"
-	@mkdir -p $(BUILD)/gen/
-	@$(BUILD_TOOLS)/aapt package -f -m -J $(BUILD)/gen/ -S res -M AndroidManifest.xml -I $(PLATFORM)/android.jar
-
-$(BUILD)/aar/activity_1.10.1.aar:
-	@echo "# Download $@"
-	@mkdir -p $(BUILD)/aar/ $(basename $@)
-	@curl -L "https://dl.google.com/android/maven2/androidx/activity/activity/1.10.1/activity-1.10.1.aar" --output $@
-	@unzip -d $(basename $@) $@
-
-my-release-key.keystore:
-	@echo "# Generate my-release-key.keystore"
-	@$(JBR_BIN)/keytool -genkey -v -keystore $@ -alias standkey -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=example.com, OU=ID, O=Example, L=Doe, S=John, C=GB"
 
 .PHONY: clean
 clean:

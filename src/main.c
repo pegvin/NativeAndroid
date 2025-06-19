@@ -14,8 +14,8 @@ static const char *const messages[] = {
 	"Hallo Welt!"
 };
 
-JNI_FUNC(jstring, MainActivity, getMessage) {
-	LOGE("MainActivity.getMessage() called!");
+JNI_FUNC(jstring, MainLib, getMessage) {
+	LOGE("MainLib.getMessage() called!");
 
 	#define SZ 1000
 	int i = rand() % (sizeof(messages) / sizeof(messages[0]));
