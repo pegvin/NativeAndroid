@@ -3,7 +3,7 @@ APP_ID       = org.yourorg.testapp
 APP_ID_PATH  = $(subst .,/,$(APP_ID))
 API_VER      = 21
 SOURCES_C    = src/main.c
-SOURCES_JAVA = java/$(APP_ID_PATH)/MainActivity.java
+SOURCES_JAVA = java/MainActivity.java
 ANDROID_SDK  = $(shell realpath ~/Android/Sdk)
 JBR_BIN      = $(shell realpath ~/android-studio/jbr/bin)
 BUILD_TOOLS  = $(ANDROID_SDK)/build-tools/36.0.0
@@ -51,13 +51,13 @@ else
 $(error Invalid target architecture)
 endif
 
-java/$(APP_ID_PATH)/*.java: R_java $(BUILD)/aar/activity_1.10.1.aar
+java/*.java: R_java $(BUILD)/aar/activity_1.10.1.aar
 	@mkdir -p $(BUILD)/obj $(BUILD)/apk
 	@echo "# Compile Java Code To Bytecode for JVM"
 	@$(JBR_BIN)/javac --release 11 \
 		-classpath "$(PLATFORM)/android.jar:$(BUILD)/aar/activity_1.10.1/classes.jar" \
 		-d $(BUILD)/obj $(BUILD)/gen/$(APP_ID_PATH)/R.java \
-		java/$(APP_ID_PATH)/MainActivity.java # Note: It seems that on Windows classpath separator is ; & on Linux it's : This might mess up things, So thought of adding this to make sure I don't kill myself over this
+		$(SOURCES_JAVA) # Note: It seems that on Windows classpath separator is ; & on Linux it's : This might mess up things, So thought of adding this to make sure I don't kill myself over this
 	@echo "# Convert JVM Bytecode To DEX Bytecode"
 	@PATH="$(JBR_BIN):$$PATH" $(BUILD_TOOLS)/d8 --release --lib $(PLATFORM)/android.jar --output $(BUILD)/apk/ build/obj/$(APP_ID_PATH)/*.class
 
