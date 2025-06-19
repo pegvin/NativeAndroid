@@ -7,7 +7,6 @@ SOURCES_JAVA = java/MainActivity.java java/MainLib.java
 ANDROID_SDK  = $(shell realpath ~/Android/Sdk)
 BUILD_TOOLS  = $(ANDROID_SDK)/build-tools/36.0.0
 NDK          = $(ANDROID_SDK)/ndk/29.0.13599879
-PLATFORM     = $(ANDROID_SDK)/platforms/android-$(API_VER)
 BUILD        = build
 # Possbile Options: arm64-v8a, armeabi-v7a, x86, x86_64
 TARGET_ARCH  = arm64-v8a
@@ -50,18 +49,23 @@ else
 $(error Invalid target architecture)
 endif
 
-java_files: AndroidManifest.xml $(SOURCES_JAVA)
+android_jar:
+	@echo "# Get android.jar"
+	@mkdir -p $(BUILD)
+	@cp $(ANDROID_SDK)/platforms/android-$(API_VER)/android.jar $(BUILD)/android.jar || wget "https://github.com/Sable/android-platforms/raw/refs/heads/master/android-$(API_VER)/android.jar" -O $(BUILD)/android.jar
+
+java_files: android_jar AndroidManifest.xml $(SOURCES_JAVA)
 	@echo "# Generate R.java"
 	@mkdir -p $(BUILD)/gen/
-	@$(BUILD_TOOLS)/aapt package -f -m -J $(BUILD)/gen/ -S res -M AndroidManifest.xml -I $(PLATFORM)/android.jar
+	@$(BUILD_TOOLS)/aapt package -f -m -J $(BUILD)/gen/ -S res -M AndroidManifest.xml -I $(BUILD)/android.jar
 	@echo "# Compile Java Code To Bytecode for JVM"
 	@mkdir -p $(BUILD)/obj $(BUILD)/apk
 	@javac --release 11 \
-		-classpath "$(PLATFORM)/android.jar" \
+		-classpath "$(BUILD)/android.jar" \
 		-d $(BUILD)/obj $(BUILD)/gen/$(APP_ID_PATH)/R.java \
 		$(SOURCES_JAVA) # Note: It seems that on Windows classpath separator is ; & on Linux it's : This might mess up things, So thought of adding this to make sure I don't kill myself over this
 	@echo "# Convert JVM Bytecode To DEX Bytecode"
-	@$(BUILD_TOOLS)/d8 --release --lib $(PLATFORM)/android.jar --output $(BUILD)/apk/ build/obj/$(APP_ID_PATH)/*.class
+	@$(BUILD_TOOLS)/d8 --release --lib $(BUILD)/android.jar --output $(BUILD)/apk/ build/obj/$(APP_ID_PATH)/*.class
 
 c_files: $(SOURCES_C)
 	@echo "# Compile $^ To Native Code"
@@ -74,7 +78,7 @@ my-release-key.keystore:
 
 all: c_files java_files my-release-key.keystore
 	@echo "# Build APK"
-	@$(BUILD_TOOLS)/aapt package -f -M AndroidManifest.xml -S res/ -I $(PLATFORM)/android.jar -F $(BUILD)/$(APK_FILE).unsigned $(BUILD)/apk/
+	@$(BUILD_TOOLS)/aapt package -f -M AndroidManifest.xml -S res/ -I $(BUILD)/android.jar -F $(BUILD)/$(APK_FILE).unsigned $(BUILD)/apk/
 	@echo "# Align APK On 4-Byte Boundaries"
 	@$(BUILD_TOOLS)/zipalign -f -p 4 $(BUILD)/$(APK_FILE).unsigned $(BUILD)/$(APK_FILE).aligned
 	@echo "# Sign APK"
@@ -104,4 +108,4 @@ adb-log:
 # Usage: make jni-call class_name=android.text.AutoText
 jni-call:
 	$(eval class_name := $(if $(class_name),$(class_name),android.text.Html))
-	@javap --class-path "$(PLATFORM)/android.jar" -s -p "$(class_name)"
+	@javap --class-path "$(BUILD)/android.jar" -s -p "$(class_name)"
