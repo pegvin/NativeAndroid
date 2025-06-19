@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Used in AndroidManifest.xml -->
+<resources>
+	<string name="app_description">My Test Application!</string>
+</resources>
+
