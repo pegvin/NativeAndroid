@@ -54,12 +54,12 @@ else
 $(error Invalid target architecture)
 endif
 
-android_jar:
+$(BUILD)/android.jar:
 	@echo "# Get android.jar"
 	@mkdir -p $(BUILD)
 	@cp $(ANDROID_SDK)/platforms/android-$(API_VER)/android.jar $(BUILD)/android.jar || wget "https://github.com/Sable/android-platforms/raw/refs/heads/master/android-$(API_VER)/android.jar" -O $(BUILD)/android.jar
 
-java_files: android_jar AndroidManifest.xml $(SOURCES_JAVA)
+java_files: $(BUILD)/android.jar AndroidManifest.xml $(SOURCES_JAVA)
 	@echo "# Generate R.java"
 	@mkdir -p $(BUILD)/gen/
 	@$(BUILD_TOOLS)/aapt package -f -m -J $(BUILD)/gen/ -S res -M AndroidManifest.xml -I $(BUILD)/android.jar
@@ -77,12 +77,12 @@ c_files: $(SOURCES_C)
 	@mkdir -p $(BUILD)/apk/lib/$(TARGET_ARCH)
 	@$(BEAR) $(CC) $(CFLAGS) -o $(BUILD)/apk/lib/$(TARGET_ARCH)/lib$(APP_NAME).so $^ $(LFLAGS)
 
-my-release-key.keystore:
+$(BUILD)/my-release-key.keystore:
 	@echo "# Generate my-release-key.keystore"
 	@mkdir -p $(BUILD)
 	@keytool -genkey -v -keystore $(BUILD)/$@ -alias standkey -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=example.com, OU=ID, O=Example, L=Doe, S=John, C=GB"
 
-all: c_files java_files my-release-key.keystore
+all: c_files java_files $(BUILD)/my-release-key.keystore
 	@echo "# Build APK"
 	@$(BUILD_TOOLS)/aapt package -f -M AndroidManifest.xml -S res/ -I $(BUILD)/android.jar -F $(BUILD)/$(APK_FILE).unsigned $(BUILD)/apk/
 	@echo "# Align APK On 4-Byte Boundaries"
@@ -112,6 +112,6 @@ adb-log:
 
 # Convert Class Name To Something Usable By JNI
 # Usage: make jni-call class_name=android.text.AutoText
-jni-call:
+jni-call: $(BUILD)/android.jar
 	$(eval class_name := $(if $(class_name),$(class_name),android.text.Html))
 	@javap --class-path "$(BUILD)/android.jar" -s -p "$(class_name)"
