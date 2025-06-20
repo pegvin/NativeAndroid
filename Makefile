@@ -4,13 +4,12 @@ APP_ID_PATH  = $(subst .,/,$(APP_ID))
 API_VER      = 21
 SOURCES_C    = src/main.c
 SOURCES_JAVA = java/MainActivity.java java/MainLib.java
-
-ANDROID_SDK     = $(shell realpath ~/Android/Sdk)
-BUILD_TOOLS     = $(ANDROID_SDK)/build-tools/36.0.0
-NDK             = $(ANDROID_SDK)/ndk/29.0.13599879
-BUILD           = build
+ANDROID_SDK  = $(shell realpath ~/Android/Sdk)
+BUILD_TOOLS  = $(ANDROID_SDK)/build-tools/36.0.0
+NDK          = $(ANDROID_SDK)/ndk/29.0.13599879
+BUILD        = build
 # Possbile Options: arm64-v8a, armeabi-v7a, x86, x86_64
-TARGET_ARCH     = arm64-v8a
+TARGET_ARCH  = arm64-v8a
 
 BEAR =
 ifneq (,$(shell which bear))
@@ -80,7 +79,8 @@ c_files: $(SOURCES_C)
 
 my-release-key.keystore:
 	@echo "# Generate my-release-key.keystore"
-	@keytool -genkey -v -keystore $@ -alias standkey -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=example.com, OU=ID, O=Example, L=Doe, S=John, C=GB"
+	@mkdir -p $(BUILD)
+	@keytool -genkey -v -keystore $(BUILD)/$@ -alias standkey -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=example.com, OU=ID, O=Example, L=Doe, S=John, C=GB"
 
 all: c_files java_files my-release-key.keystore
 	@echo "# Build APK"
@@ -88,12 +88,12 @@ all: c_files java_files my-release-key.keystore
 	@echo "# Align APK On 4-Byte Boundaries"
 	@$(BUILD_TOOLS)/zipalign -f -p 4 $(BUILD)/$(APK_FILE).unsigned $(BUILD)/$(APK_FILE).aligned
 	@echo "# Sign APK"
-	@$(BUILD_TOOLS)/apksigner sign --key-pass pass:password --ks-pass pass:password --ks my-release-key.keystore --out $(BUILD)/$(APK_FILE) $(BUILD)/$(APK_FILE).aligned
+	@$(BUILD_TOOLS)/apksigner sign --key-pass pass:password --ks-pass pass:password --ks $(BUILD)/my-release-key.keystore --out $(BUILD)/$(APK_FILE) $(BUILD)/$(APK_FILE).aligned
 
 .PHONY: clean
 clean:
 	@echo "# Clean"
-	@$(RM) -rf $(BUILD) my-release-key.keystore
+	@$(RM) -rf $(BUILD)
 
 push: all
 	@echo "# Install APK On Target Devices"
