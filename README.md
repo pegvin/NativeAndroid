@@ -4,11 +4,11 @@ Build Native Android Apps In C + Java, Without Android _Studio_.
 ---
 
 This repository is a minimal example of building Android Apps
-using C & Java without requiring Android Studio in the hopes
-of making it easier to port an already existing app written
-in C/C++ to Android.
+using C & Java without requiring Android Studio or Gradle in
+the hopes of making it easier to port an already existing app
+written in C/C++ to Android.
 
-2 key points to note:
+Few key points to note:
 - You can build Android Apps using just C/C++, But I decided
   to include Java because Android APIs are only usable via
   Java, And whilst you can use JNI to interact with those
