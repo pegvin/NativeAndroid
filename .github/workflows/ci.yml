@@ -21,15 +21,22 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-22.04' }}
       run: |
         sudo apt-get update -y
-        sudo apt-get install make openjdk-17-jdk-headless -y
+        sudo apt-get install make openjdk-17-jdk-headless wget unzip -y
 
-    - uses: nttld/setup-ndk@v1
-      id: setup-ndk
+    - name: Setup Android SDK
+      run: |
+        mkdir sdk/
+        cd sdk/
+        sh ../setup_android.sh
+
+    - name: Build
+      run: |
+        make all ANDROID_SDK=$(realpath ./sdk/)
+
+    - name: Upload Artifacts (Linux)
+      if: ${{ matrix.os == 'ubuntu-22.04' }}
+      uses: actions/upload-artifact@v4
       with:
-        ndk-version: r21e
-        add-to-path: false
-        local-cache: true
-    - run: echo $NDK && ls $NDK
-      env:
-        NDK: ${{ steps.setup-ndk.outputs.ndk-path }}
-
+        name: ${{ matrix.os }}
+        if-no-files-found: error
+        path: ./build/
