@@ -25,7 +25,7 @@ jobs:
         distribution: "jetbrains"
         java-version: "17"
 
-    - name: Cache Primes
+    - name: Setup Cache
       id: cache-sdk
       uses: actions/cache@v4
       with:
