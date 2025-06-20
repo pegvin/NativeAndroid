@@ -11,6 +11,11 @@ BUILD        = build
 # Possbile Options: arm64-v8a, armeabi-v7a, x86, x86_64
 TARGET_ARCH  = arm64-v8a
 
+BEAR =
+ifneq (,$(shell which bear))
+	BEAR=bear --append --output $(BUILD)/compile_commands.json --
+endif
+
 ifeq ($(shell uname),Linux)
 	OS_NAME=linux-x86_64
 else ifeq ($(shell uname),Darwin)
@@ -70,7 +75,7 @@ java_files: android_jar AndroidManifest.xml $(SOURCES_JAVA)
 c_files: $(SOURCES_C)
 	@echo "# Compile $^ To Native Code"
 	@mkdir -p $(BUILD)/apk/lib/$(TARGET_ARCH)
-	@bear --append --output $(BUILD)/compile_commands.json -- $(CC) $(CFLAGS) -o $(BUILD)/apk/lib/$(TARGET_ARCH)/lib$(APP_NAME).so $^ $(LFLAGS)
+	@$(BEAR) $(CC) $(CFLAGS) -o $(BUILD)/apk/lib/$(TARGET_ARCH)/lib$(APP_NAME).so $^ $(LFLAGS)
 
 my-release-key.keystore:
 	@echo "# Generate my-release-key.keystore"
