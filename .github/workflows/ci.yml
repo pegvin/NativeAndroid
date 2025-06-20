@@ -25,7 +25,15 @@ jobs:
         distribution: "jetbrains"
         java-version: "17"
 
+    - name: Cache Primes
+      id: cache-sdk
+      uses: actions/cache@v4
+      with:
+        path: sdk/
+        key: ${{ runner.os }}-sdk
+
     - name: Setup Android SDK
+      if: steps.cache-sdk.outputs.cache-hit != 'true'
       run: |
         chmod +x ./setup_android.sh
         mkdir sdk/
