@@ -28,8 +28,8 @@ endif
 
 CFLAGS=-ffunction-sections -Os -fdata-sections -Wall -Wpedantic -fvisibility=hidden -fPIC -DAPP_ID=\"$(APP_ID)\"
 CFLAGS+=-D"JNI_FUNC(return, class, name)=JNIEXPORT return JNICALL Java_$(subst .,_,$(APP_ID))_\#\#class\#\#_\#\#name(JNIEnv *env, jobject obj)"
-CFLAGS+=-I$(NDK)/sysroot/usr/include -I$(NDK)/sysroot/usr/include/android -I$(NDK)/toolchains/llvm/prebuilt/$(OS_NAME)/sysroot/usr/include -I$(NDK)/toolchains/llvm/prebuilt/$(OS_NAME)/sysroot/usr/include/android
-LFLAGS=-Wl,--gc-sections -Wl,-Map=output.map -s -lm -lGLESv3 -lEGL -landroid -llog -lOpenSLES -shared -uANativeActivity_onCreate
+CFLAGS+=-I$(NDK)/toolchains/llvm/prebuilt/$(OS_NAME)/sysroot/usr/include
+LFLAGS=-Wl,--gc-sections -s -lm -lGLESv3 -lEGL -landroid -llog -lOpenSLES -shared -uANativeActivity_onCreate
 
 TARGET=$(BUILD)/lib/$(TARGET_ARCH)/lib$(APP_NAME).so
 APK_FILE=$(APP_NAME)_$(TARGET_ARCH).apk
