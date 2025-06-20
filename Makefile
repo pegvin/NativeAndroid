@@ -71,7 +71,7 @@ java_files: android_jar AndroidManifest.xml $(SOURCES_JAVA)
 		-d $(BUILD)/obj $(BUILD)/gen/$(APP_ID_PATH)/R.java \
 		$(SOURCES_JAVA) # Note: It seems that on Windows classpath separator is ; & on Linux it's : This might mess up things, So thought of adding this to make sure I don't kill myself over this
 	@echo "# Convert JVM Bytecode To DEX Bytecode"
-	@$(BUILD_TOOLS)/d8 --release --lib $(BUILD)/android.jar --output $(BUILD)/apk/ build/obj/$(APP_ID_PATH)/*.class
+	@$(BUILD_TOOLS)/d8 --release --lib $(BUILD)/android.jar --output $(BUILD)/apk/ $(BUILD)/obj/$(APP_ID_PATH)/*.class
 
 c_files: $(SOURCES_C)
 	@echo "# Compile $^ To Native Code"
