@@ -40,7 +40,7 @@ jobs:
 
     - name: Build
       run: |
-        make all ANDROID_SDK=$(realpath ./sdk/)
+        make all ANDROID_SDK=$(realpath ./sdk/) BUILD_TOOLS_VER=36.0.0 NDK_VER=27.2.12479018
 
     - name: Upload Artifacts (Linux)
       if: ${{ matrix.os == 'ubuntu-22.04' }}

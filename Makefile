@@ -4,12 +4,15 @@ APP_ID_PATH  = $(subst .,/,$(APP_ID))
 API_VER      = 21
 SOURCES_C    = src/main.c
 SOURCES_JAVA = java/MainActivity.java java/MainLib.java
-ANDROID_SDK  = $(shell realpath ~/Android/Sdk)
-BUILD_TOOLS  = $(ANDROID_SDK)/build-tools/36.0.0
-NDK          = $(ANDROID_SDK)/ndk/29.0.13599879
-BUILD        = build
+
+ANDROID_SDK     = $(shell realpath ~/Android/Sdk)
+BUILD_TOOLS_VER = 36.0.0
+NDK_VER         = 29.0.13599879
+BUILD_TOOLS     = $(ANDROID_SDK)/build-tools/$(BUILD_TOOLS_VER)
+NDK             = $(ANDROID_SDK)/ndk/$(NDK_VER)
+BUILD           = build
 # Possbile Options: arm64-v8a, armeabi-v7a, x86, x86_64
-TARGET_ARCH  = arm64-v8a
+TARGET_ARCH     = arm64-v8a
 
 BEAR =
 ifneq (,$(shell which bear))
