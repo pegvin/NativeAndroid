@@ -21,13 +21,22 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-22.04' }}
       run: |
         sudo apt-get update -y
-        sudo apt-get install make openjdk-17-jdk-headless wget unzip -y
+        sudo apt-get install make wget unzip -y
+
+    # Could've installed openjdk-17-headless, But it seems like
+    # the runners have some old version of openjdk pre-installed
+    # which causes conflicts
+    - uses: actions/setup-java@v4
+      with:
+        distribution: "jetbrains"
+        java-version: "17"
 
     - name: Setup Android SDK
       run: |
+        chmod +x ./setup_android.sh
         mkdir sdk/
         cd sdk/
-        sh ../setup_android.sh
+        ../setup_android.sh
 
     - name: Build
       run: |
