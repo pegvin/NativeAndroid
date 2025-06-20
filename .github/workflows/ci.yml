@@ -6,19 +6,13 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-22.04
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: recursive
 
-    - name: Install Deps (Linux)
-      if: ${{ matrix.os == 'ubuntu-22.04' }}
+    - name: Install Packages
       run: |
         sudo apt-get update -y
         sudo apt-get install make wget unzip -y
@@ -38,14 +32,49 @@ jobs:
         cd sdk/
         ../setup_android.sh
 
-    - name: Build
+    - name: Build (arm64-v8a)
       run: |
-        make all ANDROID_SDK=$(realpath ./sdk/) BUILD_TOOLS_VER=36.0.0 NDK_VER=27.2.12479018 -j4
+        make all -j4 \
+          BUILD=build-arm64-v8a \
+          TARGET_ARCH=arm64-v8a \
+          ANDROID_SDK=./sdk/ \
+          BUILD_TOOLS=./sdk/build-tools/36.0.0 \
+          NDK=./sdk/ndk/27.2.12479018
 
-    - name: Upload Artifacts (Linux)
-      if: ${{ matrix.os == 'ubuntu-22.04' }}
+    - name: Build (armeabi-v7a)
+      run: |
+        make all -j4 \
+          BUILD=build-armeabi-v7a \
+          TARGET_ARCH=armeabi-v7a \
+          ANDROID_SDK=./sdk/ \
+          BUILD_TOOLS=./sdk/build-tools/36.0.0 \
+          NDK=./sdk/ndk/27.2.12479018
+
+    - name: Build (x86)
+      run: |
+        make all -j4 \
+          BUILD=build-x86 \
+          TARGET_ARCH=x86 \
+          ANDROID_SDK=./sdk/ \
+          BUILD_TOOLS=./sdk/build-tools/36.0.0 \
+          NDK=./sdk/ndk/27.2.12479018
+
+    - name: Build (x86_64)
+      run: |
+        make all -j4 \
+          BUILD=build-x86_64 \
+          TARGET_ARCH=x86_64 \
+          ANDROID_SDK=./sdk/ \
+          BUILD_TOOLS=./sdk/build-tools/36.0.0 \
+          NDK=./sdk/ndk/27.2.12479018
+
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }}
+        name: apk-files
         if-no-files-found: error
-        path: ./build/
+        path: |
+          ./build-arm64-v8a/*.apk
+          ./build-armeabi-v7a/*.apk
+          ./build-x86/*.apk
+          ./build-x86_64/*.apk

@@ -6,10 +6,8 @@ SOURCES_C    = src/main.c
 SOURCES_JAVA = java/MainActivity.java java/MainLib.java
 
 ANDROID_SDK     = $(shell realpath ~/Android/Sdk)
-BUILD_TOOLS_VER = 36.0.0
-NDK_VER         = 29.0.13599879
-BUILD_TOOLS     = $(ANDROID_SDK)/build-tools/$(BUILD_TOOLS_VER)
-NDK             = $(ANDROID_SDK)/ndk/$(NDK_VER)
+BUILD_TOOLS     = $(ANDROID_SDK)/build-tools/36.0.0
+NDK             = $(ANDROID_SDK)/ndk/29.0.13599879
 BUILD           = build
 # Possbile Options: arm64-v8a, armeabi-v7a, x86, x86_64
 TARGET_ARCH     = arm64-v8a
@@ -66,7 +64,7 @@ java_files: android_jar AndroidManifest.xml $(SOURCES_JAVA)
 	@echo "# Generate R.java"
 	@mkdir -p $(BUILD)/gen/
 	@$(BUILD_TOOLS)/aapt package -f -m -J $(BUILD)/gen/ -S res -M AndroidManifest.xml -I $(BUILD)/android.jar
-	@echo "# Compile Java Code To Bytecode for JVM"
+	@echo "# Compile Java Code To JVM Bytecode"
 	@mkdir -p $(BUILD)/obj $(BUILD)/apk
 	@javac --release 11 \
 		-classpath "$(BUILD)/android.jar" \
