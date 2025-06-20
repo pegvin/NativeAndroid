@@ -34,3 +34,6 @@ sdkmanager --sdk_root=./ "build-tools;36.0.0"
 
 echo "# Install ndk v27.2.12479018"
 sdkmanager --sdk_root=./ "ndk;27.2.12479018"
+
+echo "# Install platform android-21"
+sdkmanager --sdk_root=./ "platforms;android-21"
