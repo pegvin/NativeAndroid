@@ -74,7 +74,7 @@ else
 fi
 
 CFLAGS="-Wall -Wpedantic -Os -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC"
-CFLAGS="$CFLAGS -DAPP_ID=$APP_ID"
+CFLAGS="$CFLAGS -DAPP_ID=\"$APP_ID\""
 CFLAGS="$CFLAGS -I$NDK/toolchains/llvm/prebuilt/$OS_NAME/sysroot/usr/include"
 LFLAGS='-Wl,--gc-sections -s -lm -lGLESv3 -lEGL -landroid -llog -lOpenSLES -shared -uANativeActivity_onCreate'
 
