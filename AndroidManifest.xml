@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	package="org.yourorg.testapp"
+	versionCode="1"
+	versionName="0.1"
+>
+	<!-- https://developer.android.com/guide/topics/manifest/uses-sdk-element -->
+	<!-- https://stackoverflow.com/a/37843784/14516016 -->
+	<uses-sdk
+		android:minSdkVersion="21"
+		android:targetSdkVersion="34"
+	/>
+	<!-- https://developer.android.com/guide/topics/manifest/application-element -->
+	<application
+		android:icon="@mipmap/icon"
+		android:label="Test App"
+		android:description="@string/app_description"
+		android:hasCode="true"
+		android:vmSafeMode="false"
+	>
+		<activity
+			android:name=".MainActivity"
+			android:debuggable="true"
+			android:exported="true"
+		>
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+	</application>
+</manifest>
