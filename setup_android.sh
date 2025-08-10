@@ -27,7 +27,8 @@ else
 	yes | ./cmdline-tools/latest/bin/sdkmanager --sdk_root=./ --licenses
 fi
 
-export PATH="$(realpath ./cmdline-tools/latest/bin):$PATH"
+PATH="$(realpath ./cmdline-tools/latest/bin):$PATH"
+export PATH
 
 echo "# Install build-tools v36.0.0"
 sdkmanager --sdk_root=./ "build-tools;36.0.0"

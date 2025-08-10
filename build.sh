@@ -12,7 +12,6 @@ SOURCES_JAVA='java/MainActivity.java java/MainLib.java'
 
 BUILD=${BUILD:-'build'}
 TARGET_ARCH=${TARGET_ARCH:-'arm64-v8a'} # Possbile Options: arm64-v8a, armeabi-v7a, x86, x86_64
-TARGET="$BUILD/lib/$TARGET_ARCH/lib$APP_NAME.so"
 APK_FILE="$APP_NAME\_$TARGET_ARCH.apk"
 
 ANDROID_SDK=${ANDROID_SDK:-"$(realpath ~/android-sdk)"}
@@ -75,7 +74,7 @@ else
 fi
 
 CFLAGS="-Wall -Wpedantic -Os -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC"
-CFLAGS="$CFLAGS -DAPP_ID=\"$APP_ID\""
+CFLAGS="$CFLAGS -DAPP_ID=$APP_ID"
 CFLAGS="$CFLAGS -I$NDK/toolchains/llvm/prebuilt/$OS_NAME/sysroot/usr/include"
 LFLAGS='-Wl,--gc-sections -s -lm -lGLESv3 -lEGL -landroid -llog -lOpenSLES -shared -uANativeActivity_onCreate'
 

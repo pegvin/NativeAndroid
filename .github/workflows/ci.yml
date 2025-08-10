@@ -15,7 +15,13 @@ jobs:
     - name: Install Packages
       run: |
         sudo apt-get update -y
-        sudo apt-get install wget unzip -y
+        sudo apt-get install wget unzip shellcheck -y
+
+    - name: Lint Shell Scripts
+      continue-on-error: true
+      run: |
+        shellcheck --shell=sh --exclude=SC2086 --norc ./build.sh
+        shellcheck --shell=sh --exclude=SC2086 --norc ./setup_android.sh
 
     # Could've installed openjdk-17-headless, But it seems like
     # the runners have some old version of openjdk pre-installed
